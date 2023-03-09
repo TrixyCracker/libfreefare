@@ -486,20 +486,26 @@ mifare_classic_restore(FreefareTag tag, const MifareClassicBlockNumber block)
 
     /*
      * Same length as the increment and decrement commands but only the first
-     * two bytes are actually used.  The 4 bytes after the block number are
-     * meaningless but required (NULL-filled).
+     * two bytes are actually used.
      */
-    BUFFER_INIT(cmd, 6);
+    BUFFER_INIT(cmd, 2);
     BUFFER_INIT(res, 1);
 
     BUFFER_APPEND(cmd, MC_RESTORE);
     BUFFER_APPEND(cmd, block);
-    BUFFER_APPEND(cmd, 0x00);
-    BUFFER_APPEND(cmd, 0x00);
-    BUFFER_APPEND(cmd, 0x00);
-    BUFFER_APPEND(cmd, 0x00);
 
     CLASSIC_TRANSCEIVE(tag, cmd, res);
+
+    // Send 4 arbitrary bytes according datasheet after the command
+    BUFFER_INIT(data, 4);
+    BUFFER_INIT(res2, 1);
+
+    BUFFER_APPEND(data, 0x00);
+    BUFFER_APPEND(data, 0x00);
+    BUFFER_APPEND(data, 0x00);
+    BUFFER_APPEND(data, 0x00);
+
+    CLASSIC_TRANSCEIVE(tag, data, res2);
 
     return (BUFFER_SIZE(res) == 0) ? 0 : res[0];
 }
